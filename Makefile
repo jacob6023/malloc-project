@@ -1,5 +1,5 @@
-OBJS	= memgrind.o mymalloc.o test1.o
-SOURCE	= memgrind.c mymalloc.c test1.c
+OBJS	= mymalloc.o test1.o
+SOURCE	= mymalloc.c test1.c
 HEADER	= mymalloc.h
 OUT	= a.exe
 CC	 = gcc
@@ -8,9 +8,6 @@ LFLAGS	 =
 
 all: $(OBJS)
 	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
-
-memgrind.o: memgrind.c
-	$(CC) $(FLAGS) memgrind.c 
 
 mymalloc.o: mymalloc.c
 	$(CC) $(FLAGS) mymalloc.c 
