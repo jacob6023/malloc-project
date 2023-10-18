@@ -45,10 +45,11 @@ void* mymalloc(size_t size, char *file, int line) {
     //Checks if there is no allocated memory yet. Then initializes 
     if (*PAYLOAD(start) == 0)
     {
+        printf("INIT\n");
         //Establishes the first header
         *CHUNKISFREE(start) = 1;
         *PAYLOAD(start) = (int16_t)size;
-
+        printf("First chunk size: %d\n", *PAYLOAD(start));
         //Assigns the returned payload and moves the start and inserter to start of 
         //header 2
         pack = start + 8;
@@ -62,13 +63,15 @@ void* mymalloc(size_t size, char *file, int line) {
             //printf("Value inserted: %d\n", *inserter);
             *CHUNKISFREE(start) = 0;
             *PAYLOAD(start) = (int16_t)((MEMLENGTH * 8) - 16 - size);
+            printf("Leftover space: %d\n\n", *PAYLOAD(start));
         }
 
         return pack;
     }
 
-    //Loop to check for open memory
-    while (count < (MEMLENGTH * 8)) {
+    //Loop to check for open memory until memory is found or we go out of memory.
+    while (count < (512 * 8)) {
+        //printf("Current Chunk Space: %d\n", *PAYLOAD(start));
         //Case where there is a header at the end of memory
         if (*PAYLOAD(start) == 0)
         {
@@ -76,29 +79,41 @@ void* mymalloc(size_t size, char *file, int line) {
             return NULL;
         }
         //Space can be allocated
-        if (*CHUNKISFREE(start) == 1 && *PAYLOAD(start) >= size) 
+        if (*CHUNKISFREE(start) == 0 && *PAYLOAD(start) >= (size + 8)) 
         {
             //Stores previous size and then stores new size and that it is allocated
             int16_t tempSize = *PAYLOAD(start);
             *CHUNKISFREE(start) = 1;
             *PAYLOAD(start) = (int16_t)size;
+            //printf("Chunk size: %d\n", *PAYLOAD(start));
 
             pack = start + 8;
+            //printf("COUNT AND SIZE: %d\n", count + size);
+            //printf("CHECKING <-> %d\n", count + ((int)size));
 
-            if ((count + tempSize + 8) < MEMLENGTH) {
-                count += 8, start += 8;
-                count += size, start += size;
+            //Checks to see if a header would fit
+            if ((count + size + 8) < (512 * 8)) {
+                start = start + 8 + ((int)size);
 
                 *LASTPAYLOAD(start) = (int16_t)size;
                 *CHUNKISFREE(start) = 0;
-                *PAYLOAD(start) = (int16_t)(tempSize - 8 - size);
+                *PAYLOAD(start) = (int16_t)(tempSize - 8 - ((int16_t)size));
+                //printf("Leftover space: %d\n\n", *PAYLOAD(start));
             }
 
             return pack;
         }
+        //Moves to the next chunk if current chunk is not big enough or allocated
+        if (*CHUNKISFREE(start) == 1 || *PAYLOAD(start) < (size + 8))
+        {
+            //printf("Count1 -> %d\n", count);
+            count = count + ((int)*PAYLOAD(start)) + 8;
+            start = start + *PAYLOAD(start) + 8;
+            //printf("Count2 -> %d\n", count);
+        }
         
     }
-
+    printf("%s: %d: Error: Out of Memory.", file, line);
     return NULL;
 }
 
