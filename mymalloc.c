@@ -26,6 +26,10 @@ void* mymalloc(size_t size, char *file, int line) {
         return NULL;
     }
 
+    if ((size - 8) > ((512 * 8) - 8)) {
+        printf("%s: %d: Error: Out of Memory.", file, line);
+        return NULL;
+    }
     //Rounds the inserted size
     size = ROUNDUP8(size);
 
@@ -52,16 +56,18 @@ void* mymalloc(size_t size, char *file, int line) {
         //Assigns the returned payload and moves the start and inserter to start of 
         //header 2
         pack = start + 8;
-        start = start + (8 + size);
-        inserter = (int16_t*)start;
+        if ((size - 8) != ((512 * 8) - 8)) {
+            start = start + (8 + size);
+            inserter = (int16_t*)start;
 
-        //Initializes right most header
-        *inserter = (int16_t)size;
-        //printf("Value inserted: %d\n", *inserter);
-        inserter++;
-        *inserter = 0;
-        inserter++;
-        *inserter = (int16_t)((MEMLENGTH * 8) - 16 - size);
+            //Initializes right most header
+            *inserter = (int16_t)size;
+            //printf("Value inserted: %d\n", *inserter);
+            inserter++;
+            *inserter = 0;
+            inserter++;
+            *inserter = (int16_t)((MEMLENGTH * 8) - 16 - size);
+        }
 
         return pack;
     }
