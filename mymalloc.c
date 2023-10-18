@@ -93,6 +93,8 @@ void* mymalloc(size_t size, char *file, int line) {
                 *CHUNKISFREE(start) = 0;
                 *PAYLOAD(start) = (int16_t)(tempSize - 8 - size);
             }
+
+            return pack;
         }
         
     }
