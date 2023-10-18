@@ -17,6 +17,9 @@
 #define PAYLOAD(x) (((int16_t*)x) + 2)
 #define MEMLENGTH 512
 
+//Uncomment the below line for debug prints
+//#define DEBUG
+
 static double memory[MEMLENGTH];
 
 void* mymalloc(size_t size, char *file, int line) {
@@ -45,11 +48,18 @@ void* mymalloc(size_t size, char *file, int line) {
     //Checks if there is no allocated memory yet. Then initializes 
     if (*PAYLOAD(start) == 0)
     {
-        printf("INIT\n");
+        #ifdef DEBUG
+            printf("INIT\n");
+        #endif
+
         //Establishes the first header
         *CHUNKISFREE(start) = 1;
         *PAYLOAD(start) = (int16_t)size;
-        printf("First chunk size: %d\n", *PAYLOAD(start));
+
+        #ifdef DEBUG
+            printf("First chunk size: %d\n", *PAYLOAD(start));
+        #endif
+
         //Assigns the returned payload and moves the start and inserter to start of 
         //header 2
         pack = start + 8;
@@ -60,10 +70,17 @@ void* mymalloc(size_t size, char *file, int line) {
 
             //Initializes right most header with size of previous chunk
             *LASTPAYLOAD(start) = (int16_t)size;
-            //printf("Value inserted: %d\n", *inserter);
+
+            #ifdef DEBUG
+                printf("Value inserted: %d\n", *inserter);
+            #endif
+
             *CHUNKISFREE(start) = 0;
             *PAYLOAD(start) = (int16_t)((MEMLENGTH * 8) - 16 - size);
-            printf("Leftover space: %d\n\n", *PAYLOAD(start));
+
+            #ifdef DEBUG
+                printf("Leftover space: %d\n\n", *PAYLOAD(start));
+            #endif
         }
 
         return pack;
@@ -71,7 +88,11 @@ void* mymalloc(size_t size, char *file, int line) {
 
     //Loop to check for open memory until memory is found or we go out of memory.
     while (count < (512 * 8)) {
-        //printf("Current Chunk Space: %d\n", *PAYLOAD(start));
+
+        #ifdef DEBUG
+            printf("Current Chunk Space: %d\n", *PAYLOAD(start));
+        #endif
+
         //Case where there is a header at the end of memory
         if (*PAYLOAD(start) == 0)
         {
@@ -85,11 +106,17 @@ void* mymalloc(size_t size, char *file, int line) {
             int16_t tempSize = *PAYLOAD(start);
             *CHUNKISFREE(start) = 1;
             *PAYLOAD(start) = (int16_t)size;
-            //printf("Chunk size: %d\n", *PAYLOAD(start));
+
+            #ifdef DEBUG
+                printf("Chunk size: %d\n", *PAYLOAD(start));
+            #endif
 
             pack = start + 8;
-            //printf("COUNT AND SIZE: %d\n", count + size);
-            //printf("CHECKING <-> %d\n", count + ((int)size));
+
+            #ifdef DEBUG
+                printf("COUNT AND SIZE: %d\n", count + size);
+                printf("CHECKING <-> %d\n", count + ((int)size));
+            #endif
 
             //Checks to see if a header would fit
             if ((count + size + 8) < (512 * 8)) {
@@ -98,7 +125,10 @@ void* mymalloc(size_t size, char *file, int line) {
                 *LASTPAYLOAD(start) = (int16_t)size;
                 *CHUNKISFREE(start) = 0;
                 *PAYLOAD(start) = (int16_t)(tempSize - 8 - ((int16_t)size));
-                //printf("Leftover space: %d\n\n", *PAYLOAD(start));
+
+                #ifdef DEBUG
+                    printf("Leftover space: %d\n\n", *PAYLOAD(start));
+                #endif
             }
 
             return pack;
@@ -106,10 +136,16 @@ void* mymalloc(size_t size, char *file, int line) {
         //Moves to the next chunk if current chunk is not big enough or allocated
         if (*CHUNKISFREE(start) == 1 || *PAYLOAD(start) < (size + 8))
         {
-            //printf("Count1 -> %d\n", count);
+            #ifdef DEBUG
+                printf("Count1 -> %d\n", count);
+            #endif
+
             count = count + ((int)*PAYLOAD(start)) + 8;
             start = start + *PAYLOAD(start) + 8;
-            //printf("Count2 -> %d\n", count);
+
+            #ifdef DEBUG
+                printf("Count2 -> %d\n", count);
+            #endif
         }
         
     }
