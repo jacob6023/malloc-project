@@ -154,10 +154,53 @@ void* mymalloc(size_t size, char *file, int line) {
 }
 
 void myfree(void *ptr, char *file, int line) {
-    //convert file to void, and compare to ptr
-    if ((void*)memory <= ptr && ptr <= (void*)(memory+MEMLENGTH)){
-         printf("work")
+    // Checks if ptr is outside the valid memory range
+    if (ptr < (void*)memory || ptr >= (void*)(memory + MEMLENGTH * 8)) {
+        printf("Attempt to free data invalid\n");
+        return;
     }
 
+    // Convert memory and ptr
+    int16_t* memoryStart = (int16_t*)memory;
+    int16_t* cursor = (int16_t*)ptr;
 
+    // Find the metadata for the current block
+    int16_t* metadata = cursor - 2;
+
+    // Loops until we reach the start of the memory
+    while (metadata >= memoryStart) {
+        // Check if the current block is free
+        if (!(*metadata & 1)) {
+            *metadata |= 1;  // Set the flag to free
+
+            // Find the size of the current block
+            int16_t target_size = (*metadata >> 8) * 8;
+
+            // Find the metadata for the previous block
+            int16_t* prevMetadata = metadata - (*metadata >> 8);
+
+            // If the previous block is free, merge with it
+            if (prevMetadata >= memoryStart && !(*prevMetadata & 1)) {
+                target_size += (*prevMetadata >> 8) * 8;
+                metadata = prevMetadata;
+            }
+
+            // Finds next metadata block
+            int16_t* nextMetadata = metadata + (*metadata >> 8);
+
+            // If next block is free, then merge
+            if (nextMetadata < (memoryStart + MEMLENGTH) && !(*nextMetadata & 1)) {
+                target_size += (*nextMetadata >> 8) * 8;
+            }
+
+            // Update the size in the current block's metadata
+            *metadata = (target_size >> 3) << 8;
+        }
+
+        // Move to the metadata of the previous block
+        metadata -= (*metadata >> 8);
+    }
+
+    printf("Memory is free\n");
 }
+
