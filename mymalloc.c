@@ -58,6 +58,29 @@ void *MyMalloc(size_t noOfBytes, char *file, int line) {
 }
 
 
-void myfree(void *ptr, char *file, int line) {
+void merge() {
+    struct block *curr, *prev;
+    curr = freeList;
 
+    while (curr->next != NULL) {
+        if (curr->free && curr->next->free) {
+            // Merge adjacent free blocks in the free list.
+            curr->size += (curr->next->size) + sizeof(struct block);
+            curr->next = curr->next->next;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
 }
+
+void MyFree(void* ptr, char *file) {
+    if ((void*)memory <= ptr && ptr <= (void*)(memory + 20000)) {
+        // Verify that the provided pointer is within the allocated memory range.
+        struct block* curr = ptr;
+        --curr;
+        curr->free = 1;
+        merge(); // After freeing memory, merge adjacent free blocks.
+    } else
+printf("Error invalid pointer\n");
+}
+
