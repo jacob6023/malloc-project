@@ -1,5 +1,5 @@
 Devon Botney, dcb200
-Jacob _______, _______
+Jacob Jeong, jhj48
 
 Our test plan is to run the methods included in memgrind.c, to make sure that
 all normal uses of malloc() and free() work, and to make sure that detectable
