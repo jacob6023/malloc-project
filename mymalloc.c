@@ -57,6 +57,17 @@ void *MyMalloc(size_t noOfBytes, char *file, int line) {
     }
 }
 
+void split(struct block* fitting_slot, size_t size) {
+    // Split the given block to allocate a portion of it.
+    fitting_slot++;
+    struct block* new = (void*)((void*)fitting_slot + size + sizeof(struct block));
+    new->size = fitting_slot->size - size - sizeof(struct block);
+    new->free = 1;
+    new->next = fitting_slot->next;
+    fitting_slot->size = size;
+    fitting_slot->free = 0;
+    fitting_slot->next = new;
+}
 
 void merge() {
     struct block *curr, *prev;
