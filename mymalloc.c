@@ -19,59 +19,44 @@
 
 static double memory[MEMLENGTH];
 
-void* mymalloc(size_t size, char *file, int line) {
-    //Checks to make sure a positive integer is entered
-    if (size <= 0) {
-        printf("%s: %d: Error: Cannot Allocate 0 Bytes or Less.", file, line);
-        return NULL;
+void *MyMalloc(size_t noOfBytes, char *file, int line) {
+    struct block *curr, *prev;
+    void *result;
+
+    // Check if the free list is empty
+    if (freeList->size == 0) {
+        initialize();
+        printf("Memory initialized\n");
     }
 
-    //Rounds the inserted size
-    size = ROUNDUP8(size);
+    curr = freeList;
 
-    //pack is what is returned
-    char* pack = NULL;
-    //start is the start of the header and moves to the payload when needed
-    char* start = (char*)memory;
-    //inserter is what I use to move around in memory
-    int16_t* inserter = (int16_t*)memory;
-    //increases as I move through memory to make sure I stay in the bounds of memory
-    int count = 0;
-
-    //printf("Value of size: %d\n", size);
-
-    //Checks if there is no allocated memory yet. Then initializes 
-    if (*PAYLOAD(start) == 0)
-    {
-        //Establishes the first header
-        inserter++;
-        *inserter = 1;
-        inserter++;
-        *inserter = (int16_t)size;
-
-        //Assigns the returned payload and moves the start and inserter to start of 
-        //header 2
-        pack = start + 8;
-        start = start + (8 + size);
-        inserter = (int16_t*)start;
-
-        //Initializes right most header
-        *inserter = (int16_t)size;
-        //printf("Value inserted: %d\n", *inserter);
-        inserter++;
-        *inserter = 0;
-        inserter++;
-        *inserter = (int16_t)((MEMLENGTH * 8) - 16 - size);
-
-        return pack;
+    while (((curr->size < noOfBytes) || (curr->free == 0)) && (curr->next != NULL)) {
+        // Iterate through the free list to find suitable block
+        prev = curr;
+        curr = curr->next;
+        printf("One block checked\n");
     }
 
-    //while (count < (MEMLENGTH * 8)) {
-
-    //}
-
-    return NULL;
+    if (curr->size == noOfBytes) {
+        // Find an exact fitting block
+        curr->free = 0;
+        result = (void *)(++curr);
+        printf("Exact fitting block allocated\n");
+        return result;
+    } else if (curr->size > (noOfBytes + sizeof(struct block))) {
+        // If finds block with more space it splits
+        split(curr, noOfBytes);
+        result = (void *)(++curr);
+        printf("Fitting block allocated with a split\n");
+        return result;
+    } else {
+        result = NULL;
+        printf("Sorry. Not enough memory to allocate\n");
+        return result;
+    }
 }
+
 
 void myfree(void *ptr, char *file, int line) {
 
