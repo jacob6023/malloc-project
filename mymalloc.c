@@ -81,7 +81,7 @@ void* mymalloc(size_t size, char *file, int line) {
 
 void myfree(void *ptr, char *file, int line) {
     //convert file to void, and compare to ptr
-    if ((void*)file <= ptr && ptr <= (void*)(file+MEMLENGTH)){
+    if ((void*)memory <= ptr && ptr <= (void*)(memory+MEMLENGTH)){
          printf("work")
     }
 
