@@ -84,7 +84,7 @@ void merge() {
     }
 }
 
-void MyFree(void* ptr, char *file) {
+void MyFree(void* ptr, char *file, int line) {
     if ((void*)memory <= ptr && ptr <= (void*)(memory + 20000)) {
         // Verify that the provided pointer is within the allocated memory range.
         struct block* curr = ptr;
