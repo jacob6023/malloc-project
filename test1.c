@@ -16,6 +16,8 @@ void varMemory(int i) {
 
 int main(void) {
     //noMemory();
-    varMemory(15);
+    varMemory(20); //24
+    varMemory(30); //32
+    varMemory(40); //40
     return 1;
 }
