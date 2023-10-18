@@ -19,7 +19,7 @@
 
 static double memory[MEMLENGTH];
 
-void *MyMalloc(size_t noOfBytes, char *file, int line) {
+void *mymalloc(size_t noOfBytes, char *file, int line) {
     struct block *curr, *prev;
     void *result;
 
@@ -84,7 +84,7 @@ void merge() {
     }
 }
 
-void MyFree(void* ptr, char *file, int line) {
+void myfree(void* ptr, char *file, int line) {
     if ((void*)memory <= ptr && ptr <= (void*)(memory + 20000)) {
         // Verify that the provided pointer is within the allocated memory range.
         struct block* curr = ptr;
