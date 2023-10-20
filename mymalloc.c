@@ -23,6 +23,8 @@
 static double memory[MEMLENGTH];
 
 void* mymalloc(size_t size, char *file, int line) {
+    char* outOfBounds = (((char*)memory) + (MEMLENGTH * 8));
+
     //Checks to make sure a positive integer is entered
     if (size <= 0) {
         printf("%s: %d: Error: Cannot Allocate 0 Bytes or Less.", file, line);
@@ -30,18 +32,19 @@ void* mymalloc(size_t size, char *file, int line) {
     }
     //Checks to see if initial size is out of bounds
     if ((size) > ((512 * 8) - 8)) {
-        printf("%s: %d: Error: Out of Memory.", file, line);
+        printf("%s: %d: Error: Out of Memory During Initialization.", file, line);
         return NULL;
     }
     //Rounds the inserted size
-    size = ROUNDUP8(size);
+    //printf("Size: %d   ", size);
+    if (size % 8 != 0) size = ROUNDUP8(size);
 
     //pack is what is returned
     char* pack = NULL;
     //start is the start of the header and moves to the payload when needed
     char* start = (char*)memory;
     //increases as I move through memory to make sure I stay in the bounds of memory
-    int count = 1;
+    //int count = 1;
 
     //printf("Value of size: %d\n", size);
 
@@ -77,7 +80,7 @@ void* mymalloc(size_t size, char *file, int line) {
 
             *CHUNKNOTFREE(start) = 0;
             *PAYLOAD(start) = (int16_t)((MEMLENGTH * 8) - 16 - size);
-
+            //printf("Leftover space: %d  ", *PAYLOAD(start));
             #ifdef DEBUG
                 printf("Leftover space: %d\n\n", *PAYLOAD(start));
             #endif
@@ -85,22 +88,23 @@ void* mymalloc(size_t size, char *file, int line) {
 
         return pack;
     }
-
+//((char*)start) + size + 8 < outOfBounds
     //Loop to check for open memory until memory is found or we go out of memory.
-    while (count < (512 * 8)) {
+    
+    while(((char*)start) < outOfBounds) {
 
         #ifdef DEBUG
             printf("Current Chunk Space: %d\n", *PAYLOAD(start));
         #endif
 
         //Case where there is a header at the end of memory
-        if (*PAYLOAD(start) == 0)
+        /*if (*PAYLOAD(start))
         {
-            printf("%s: %d: Error: Out of Memory.", file, line);
+            printf("%s: %d: Error: Out of Memory during header creation.", file, line);
             return NULL;
-        }
+        }*/
         //Space can be allocated
-        if (*CHUNKNOTFREE(start) == 0 && *PAYLOAD(start) >= (size + 8)) 
+        if (*CHUNKNOTFREE(start) == 0 && *PAYLOAD(start) >= (size)) 
         {
             //Stores previous size and then stores new size and that it is allocated
             int16_t tempSize = *PAYLOAD(start);
@@ -119,13 +123,13 @@ void* mymalloc(size_t size, char *file, int line) {
             #endif
 
             //Checks to see if a header would fit
-            if ((count + size + 8) < (512 * 8)) {
+            if (((char*)start) + size + 8 < outOfBounds) {
                 start = start + 8 + ((int)size);
 
                 *LASTPAYLOAD(start) = (int16_t)size;
                 *CHUNKNOTFREE(start) = 0;
                 *PAYLOAD(start) = (int16_t)(tempSize - 8 - ((int16_t)size));
-
+                //printf("Leftover space: %d  ", *PAYLOAD(start));
                 #ifdef DEBUG
                     printf("Leftover space: %d\n\n", *PAYLOAD(start));
                 #endif
@@ -140,7 +144,7 @@ void* mymalloc(size_t size, char *file, int line) {
                 printf("Count1 -> %d\n", count);
             #endif
 
-            count = count + ((int)*PAYLOAD(start)) + 8;
+            //count = count + ((int)*PAYLOAD(start)) + 8;
             start = start + *PAYLOAD(start) + 8;
 
             #ifdef DEBUG
@@ -149,7 +153,7 @@ void* mymalloc(size_t size, char *file, int line) {
         }
         
     }
-    printf("%s: %d: Error: Out of Memory.\n", file, line);
+    printf("%s: %d: Error: Out of Memory when traversing.\n", file, line);
     return NULL;
 }
 
@@ -194,6 +198,7 @@ void myfree(void *ptr, char *file, int line) {
             prevdata = metadata;
             metadata = metadata + 8 + *PAYLOAD(metadata);
         }
+        
         /*// Check if the current block is free
         if (!(*metadata & 1)) {
             *metadata |= 1;  // Set the flag to free
@@ -227,7 +232,7 @@ void myfree(void *ptr, char *file, int line) {
         metadata -= (*metadata >> 8);
         */
     }
+    
 
     printf("Memory is free\n");
 }
-
