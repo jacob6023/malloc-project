@@ -11,8 +11,8 @@
 #define ROUNDUP8(x) (((x) + 7) & (-8))
 //LASTPAYLOAD converts the current pointer to the correct data type
 #define LASTPAYLOAD(x) ((int16_t*)x)
-//CHUNKISFREE moves the current pointer two bytes forward to whether the chunk is free
-#define CHUNKISFREE(x) (((int16_t*)x) + 1)
+//CHUNKNOTFREE moves the current pointer two bytes forward to whether the chunk is free
+#define CHUNKNOTFREE(x) (((int16_t*)x) + 1)
 //PAYLOAD moves the current pointer four bytes forward where the payload size is
 #define PAYLOAD(x) (((int16_t*)x) + 2)
 #define MEMLENGTH 512
@@ -53,7 +53,7 @@ void* mymalloc(size_t size, char *file, int line) {
         #endif
 
         //Establishes the first header
-        *CHUNKISFREE(start) = 1;
+        *CHUNKNOTFREE(start) = 1;
         *PAYLOAD(start) = (int16_t)size;
 
         #ifdef DEBUG
@@ -75,7 +75,7 @@ void* mymalloc(size_t size, char *file, int line) {
                 printf("Value inserted: %d\n", *inserter);
             #endif
 
-            *CHUNKISFREE(start) = 0;
+            *CHUNKNOTFREE(start) = 0;
             *PAYLOAD(start) = (int16_t)((MEMLENGTH * 8) - 16 - size);
 
             #ifdef DEBUG
@@ -100,11 +100,11 @@ void* mymalloc(size_t size, char *file, int line) {
             return NULL;
         }
         //Space can be allocated
-        if (*CHUNKISFREE(start) == 0 && *PAYLOAD(start) >= (size + 8)) 
+        if (*CHUNKNOTFREE(start) == 0 && *PAYLOAD(start) >= (size + 8)) 
         {
             //Stores previous size and then stores new size and that it is allocated
             int16_t tempSize = *PAYLOAD(start);
-            *CHUNKISFREE(start) = 1;
+            *CHUNKNOTFREE(start) = 1;
             *PAYLOAD(start) = (int16_t)size;
 
             #ifdef DEBUG
@@ -123,7 +123,7 @@ void* mymalloc(size_t size, char *file, int line) {
                 start = start + 8 + ((int)size);
 
                 *LASTPAYLOAD(start) = (int16_t)size;
-                *CHUNKISFREE(start) = 0;
+                *CHUNKNOTFREE(start) = 0;
                 *PAYLOAD(start) = (int16_t)(tempSize - 8 - ((int16_t)size));
 
                 #ifdef DEBUG
@@ -134,7 +134,7 @@ void* mymalloc(size_t size, char *file, int line) {
             return pack;
         }
         //Moves to the next chunk if current chunk is not big enough or allocated
-        if (*CHUNKISFREE(start) == 1 || *PAYLOAD(start) < (size + 8))
+        if (*CHUNKNOTFREE(start) == 1 || *PAYLOAD(start) < (size + 8))
         {
             #ifdef DEBUG
                 printf("Count1 -> %d\n", count);
@@ -149,27 +149,52 @@ void* mymalloc(size_t size, char *file, int line) {
         }
         
     }
-    printf("%s: %d: Error: Out of Memory.", file, line);
+    printf("%s: %d: Error: Out of Memory.\n", file, line);
     return NULL;
 }
 
 void myfree(void *ptr, char *file, int line) {
     // Checks if ptr is outside the valid memory range
-    if (ptr < (void*)memory || ptr >= (void*)(memory + MEMLENGTH * 8)) {
-        printf("Attempt to free data invalid\n");
+    if (ptr < (void*)memory || ptr >= (void*)(memory + MEMLENGTH)) {
+        printf("%s: %d: Error: Attempt to free data invalid\n", file, line);
         return;
     }
 
     // Convert memory and ptr
     int16_t* memoryStart = (int16_t*)memory;
-    int16_t* cursor = (int16_t*)ptr;
 
-    // Find the metadata for the current block
-    int16_t* metadata = cursor - 2;
+    // FAssigns metadata to beginning of memory
+    char* metadata = (char*)memory;
+    int16_t* chunk = (int16_t*)(metadata + 8);
+    char* prevdata = metadata;
 
     // Loops until we reach the start of the memory
     while (metadata >= memoryStart) {
-        // Check if the current block is free
+        //checks if we passed the ptr
+        if(metadata > ptr) {
+            if (*CHUNKNOTFREE(prevdata) == 1) {
+                *CHUNKNOTFREE(prevdata) = 0;
+
+                if (*CHUNKNOTFREE(metadata) == 0) {
+                    *PAYLOAD(prevdata) = *PAYLOAD(prevdata) + 8 + *PAYLOAD(metadata);
+                }
+                
+                metadata = prevdata;
+                prevdata = prevdata - 8 - *LASTPAYLOAD(prevdata);
+
+                if (*CHUNKNOTFREE(prevdata) == 0) {
+                    *PAYLOAD(prevdata) = *PAYLOAD(prevdata) + 8 + *PAYLOAD(metadata);
+                }
+                return;
+            } else {
+                printf("%s: %d: Error: Chunk is already free\n", file, line);
+                return;
+            }
+        } else {
+            prevdata = metadata;
+            metadata = metadata + 8 + *PAYLOAD(metadata);
+        }
+        /*// Check if the current block is free
         if (!(*metadata & 1)) {
             *metadata |= 1;  // Set the flag to free
 
@@ -194,11 +219,13 @@ void myfree(void *ptr, char *file, int line) {
             }
 
             // Update the size in the current block's metadata
+            printf("Size before: %d\n", *PAYLOAD())
             *metadata = (target_size >> 3) << 8;
         }
 
         // Move to the metadata of the previous block
         metadata -= (*metadata >> 8);
+        */
     }
 
     printf("Memory is free\n");
