@@ -87,7 +87,9 @@ memgrind. All testing done outside of memgrind was documented in the appropriate
 description above. Included is a file called test1.c. This file was used to test certain
 functionalities that come with mymalloc and myfree. The file is constantly changed to fit
 whatever is being tested. The file currently has our test for making sure that headers
-were properly set when coallescing more than 1 pair of chunks. 
+were properly set when coallescing more than 1 pair of chunks. It can be ran by replacing
+all instances of the word "memgrind" in Makefile with the word "test" and can go back to memgrind
+by changing all instances of "test" being replaced by "memgrind".
 
 As for running memgrind, Makefile is already set up to be able to run mymalloc with
 tests.
