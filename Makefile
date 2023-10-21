@@ -1,7 +1,7 @@
 OBJS	= mymalloc.o memgrind.o
 SOURCE	= mymalloc.c memgrind.c
 HEADER	= mymalloc.h
-OUT	= a.exe
+OUT	= a
 CC	 = gcc
 FLAGS	 = -g -c -Wall
 LFLAGS	 = 
