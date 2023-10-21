@@ -63,6 +63,60 @@ void test3() {
     }
 }
 
+void test5() {
+    char *ptrArray[60];  // Array to store 120 pointers
+    int allocated[60] = {0};  // Initialize the memory allocation status array
+    int loc = 0;  // Current location
+
+    for(int i = 0; i < 60; i++) {
+        int random = rand() % 2;
+
+        int randomSize = rand() % 3;
+
+        switch (randomSize)
+        {
+        case 0:
+            randomSize = 8;
+            break;
+        case 1:
+            randomSize = 16;
+            break;
+        case 2:
+            randomSize = 24;
+            break;
+        default:
+            break;
+        }
+        //printf("Random %d\n", random);
+        if(loc == 0 || (random == 0 && loc < 60)) {
+            // Allocate 1 byte of memory and store the address
+            //printf("alloc loc=%d\n", loc);
+            ptrArray[loc] = malloc(randomSize);
+            allocated[loc] = 1;
+            loc++;
+            //printf("CREATE %d\n", loc);
+        } else {
+            // Release the memory
+            //printf("free loc=%d\n", loc);
+            if (loc > 0) {
+                loc--;
+                free(ptrArray[loc]);
+                allocated[loc] = 0;
+            }
+            //printf("FREE %d\n", loc);
+        }
+    }
+
+    //printf("Process is done.\n");
+
+    // Clean up any unreleased memory
+    for(int i = 0; i < 60; i++) {
+        if(allocated[i] == 1) {
+            free(ptrArray[i]);
+        }
+    }
+}
+
 int main() {
     gettimeofday(&start_time, NULL);
     //printf("START: %ld\n", start_time.tv_usec);
@@ -93,4 +147,12 @@ int main() {
     gettimeofday(&end_time, NULL);
     avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
     printf("Test 3 average runtime: %ld microseconds\n", avg);
+
+    gettimeofday(&start_time, NULL);
+    for(int i = 0; i < 50; i++) {
+        test5();
+    }
+    gettimeofday(&end_time, NULL);
+    avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
+    printf("Test 5 average runtime: %ld microseconds\n", avg);
 }

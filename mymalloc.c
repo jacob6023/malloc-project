@@ -169,6 +169,7 @@ void myfree(void *ptr, char *file, int line) {
     char* metadata = (char*)memory;
     //int16_t* chunk = (int16_t*)(metadata + 8);
     char* prevdata = metadata;
+    char* updater;
 
     char* outOfBounds = (((char*)memory) + (MEMLENGTH * 8));
     // Loops until we reach the start of the memory
@@ -194,6 +195,11 @@ void myfree(void *ptr, char *file, int line) {
                     //printf("METADATA2 %d\n", *PAYLOAD(metadata));
                     *PAYLOAD(prevdata) = *PAYLOAD(prevdata) + 8 + *PAYLOAD(metadata);
                     //printf("Do left %d\n", *PAYLOAD(prevdata));
+                }
+                
+                if ((prevdata + 8 + *PAYLOAD(prevdata)) < outOfBounds) {
+                    updater = prevdata + 8 + *PAYLOAD(prevdata);
+                    *LASTPAYLOAD(updater) = *PAYLOAD(prevdata);
                 }
                 //printf("Leftover space: %d\n", *PAYLOAD(prevdata));
                 //printf("Is Free: %d\n", *CHUNKNOTFREE(prevdata));
