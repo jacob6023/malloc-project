@@ -2,14 +2,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "mymalloc.h"
+
+struct timeval start_time, end_time;
+
 void test1() {
     for(int i = 0; i < 120; i++) {
         char *ptr = malloc(1);  // Allocate 1 byte of memory
         free(ptr);  // Release the memory
     }
-    printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 }
 
 void test2() {
@@ -23,7 +26,7 @@ void test2() {
         free(ptrArray[i]);  // Release the memory
     }
 
-    printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
+    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 }
 void test3() {
     char *ptrArray[120];  // Array to store 120 pointers
@@ -55,5 +58,19 @@ void test3() {
         }
     }
 
-    printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
+    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
+}
+
+int main() {
+    gettimeofday(&start_time, NULL);
+    //printf("START: %ld\n", start_time.tv_usec);
+    for (int i = 0; i < 50; i++) {
+        test1();
+    }
+    gettimeofday(&end_time, NULL);
+    //printf("END: %ld\n", end_time.tv_usec);
+    long avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
+    printf("Test 1 average runtime: %ld microseconds\n", avg);
+
+    
 }
