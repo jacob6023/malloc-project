@@ -63,6 +63,26 @@ void test3() {
     }
 }
 
+void test4() {
+    char *ptrArray[64];
+
+    for (int i = 0; i < 64; i++) {
+        ptrArray[i] = malloc(56);
+    }
+
+    for (int i = 0; i < 32; i++) {
+        free(ptrArray[i*2]);
+    }
+
+    for (int i = 0; i < 32; i++) {
+        ptrArray[i*2] = malloc(56);
+    }
+
+    for(int i = 0; i < 64; i++) {
+        free(ptrArray[i]);
+    }
+}
+
 void test5() {
     char *ptrArray[60];  // Array to store 120 pointers
     int allocated[60] = {0};  // Initialize the memory allocation status array
@@ -147,6 +167,14 @@ int main() {
     gettimeofday(&end_time, NULL);
     avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
     printf("Test 3 average runtime: %ld microseconds\n", avg);
+
+    gettimeofday(&start_time, NULL);
+    for(int i = 0; i < 1; i++) {
+        test4();
+    }
+    gettimeofday(&end_time, NULL);
+    avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
+    printf("Test 4 average runtime: %ld microseconds\n", avg);
 
     gettimeofday(&start_time, NULL);
     for(int i = 0; i < 50; i++) {

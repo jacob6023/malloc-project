@@ -26,8 +26,8 @@ void* mymalloc(size_t size, char *file, int line) {
     char* outOfBounds = (((char*)memory) + (MEMLENGTH * 8));
 
     //Checks to make sure a positive integer is entered
-    if (size <= 0) {
-        printf("%s: %d: Error: Cannot Allocate 0 Bytes or Less.", file, line);
+    if (size < 0) {
+        printf("%s: %d: Error: Cannot Allocate Less Than 0 Bytes.", file, line);
         return NULL;
     }
     //Checks to see if initial size is out of bounds
@@ -152,14 +152,14 @@ void* mymalloc(size_t size, char *file, int line) {
         }
         
     }
-    printf("%s: %d: Error: Out of Memory when traversing.\n", file, line);
+    printf("%s: %d: Error: Out of Memory When Traversing.\n", file, line);
     return NULL;
 }
 
 void myfree(void *ptr, char *file, int line) {
     // Checks if ptr is outside the valid memory range
     if (ptr < (void*)memory || ptr >= (void*)(memory + MEMLENGTH)) {
-        printf("%s: %d: Error: Attempt to free data invalid\n", file, line);
+        printf("%s: %d: Error: Attempt To Free Data Invalid\n", file, line);
         return;
     }
     // Convert memory and ptr
@@ -205,7 +205,7 @@ void myfree(void *ptr, char *file, int line) {
                 //printf("Is Free: %d\n", *CHUNKNOTFREE(prevdata));
                 return;
             } else {
-                printf("%s: %d: Error: Chunk is already free\n", file, line);
+                printf("%s: %d: Error: Chunk Is Already Free\n", file, line);
                 return;
             }
         } else {
@@ -217,5 +217,5 @@ void myfree(void *ptr, char *file, int line) {
     }
     
 
-    printf("Memory is free\n");
+    printf("Memory Is Free\n");
 }
