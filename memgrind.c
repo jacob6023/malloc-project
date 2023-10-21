@@ -83,7 +83,7 @@ int main() {
     }
     gettimeofday(&end_time, NULL);
     //printf("END: %ld\n", end_time.tv_usec);
-    long avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
+    avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
     printf("Test 2 average runtime: %ld microseconds\n", avg);
 
     gettimeofday(&start_time, NULL);
