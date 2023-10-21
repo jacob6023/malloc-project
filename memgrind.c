@@ -25,8 +25,6 @@ void test2() {
     for(int i = 0; i < 120; i++) {
         free(ptrArray[i]);  // Release the memory
     }
-
-    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 }
 void test3() {
     char *ptrArray[120];  // Array to store 120 pointers
@@ -57,20 +55,31 @@ void test3() {
             free(ptrArray[i]);
         }
     }
-
-    //printf("MemClear?: %d\n", memCleared());  // Check if memory is cleared
 }
 
 int main() {
-    gettimeofday(&start_time, NULL);
+    gettimeofday(&start_time, NULL);{
     //printf("START: %ld\n", start_time.tv_usec);
     for (int i = 0; i < 50; i++) {
         test1();
+        
     }
     gettimeofday(&end_time, NULL);
     //printf("END: %ld\n", end_time.tv_usec);
     long avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
     printf("Test 1 average runtime: %ld microseconds\n", avg);
-
+    }
+    
+    gettimeofday(&start_time, NULL);{
+    //printf("START: %ld\n", start_time.tv_usec);
+    for (int i = 0; i < 50; i++) {
+        test2();
+        
+    }
+    gettimeofday(&end_time, NULL);
+    //printf("END: %ld\n", end_time.tv_usec);
+    long avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
+    printf("Test 2 average runtime: %ld microseconds\n", avg);
+    }
     
 }
