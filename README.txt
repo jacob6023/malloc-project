@@ -67,6 +67,13 @@ through testing. The other issue, which was found through memgrind test 5, was t
 chunk in front of newly coallesced chunks don't have their backwards facing data
 updated to reflect the change in size of the unallocated space. This has since been fixed.
 
+For detectable errors, we made sure to handle when the address isn't within memory and
+for when the memory has already been freed. However, we heard in class that error 2
+was optional and that we could include it into our code if we would like. Our myfree allows
+for the user to free a chunk of memory from anywhere inside that chunk whether it be the payload
+or the header. It does this by comparing the start of each chunk with the address of the
+pointer and deduces which chunk the pointer points to using these comparisons.
+
 There were very few errors that could occur within free so that is reflected by only having
 two errors in the function, both being specific to their issue so that the client can
 understand what went wrong and fix any code they have wrote.
@@ -77,7 +84,10 @@ All testing was done on a seperate file, not included with the project as they a
 non-permanent functions that were made to test individual test cases and to make sure
 things were working properly. The main way things were tested afterwards was through
 memgrind. All testing done outside of memgrind was documented in the appropriate function
-description above.
+description above. Included is a file called test1.c. This file was used to test certain
+functionalities that come with mymalloc and myfree. The file is constantly changed to fit
+whatever is being tested. The file currently has our test for making sure that headers
+were properly set when coallescing more than 1 pair of chunks. 
 
 As for running memgrind, Makefile is already set up to be able to run mymalloc with
 tests.

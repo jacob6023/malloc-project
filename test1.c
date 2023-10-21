@@ -15,9 +15,12 @@ void varMemory(int i) {
 }
 
 int main(void) {
-    //noMemory();
-    varMemory(20); //24
-    varMemory(30); //32
-    varMemory(40); //40
-    return 1;
+    void* a = malloc(1);
+    void* b = malloc(1);
+    void* c = malloc(1);
+
+    free(a);
+    free(c);
+    free(b);
+    return ;
 }
