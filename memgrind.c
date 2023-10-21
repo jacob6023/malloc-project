@@ -64,7 +64,7 @@ void test3() {
 }
 
 int main() {
-    gettimeofday(&start_time, NULL);{
+    gettimeofday(&start_time, NULL);
     //printf("START: %ld\n", start_time.tv_usec);
     for(int i = 0; i < 50; i++) {
         test1();
@@ -76,27 +76,21 @@ int main() {
     printf("Test 1 average runtime: %ld microseconds\n", avg);
 
     
-    gettimeofday(&start_time, NULL);{
+    gettimeofday(&start_time, NULL);
     //printf("START: %ld\n", start_time.tv_usec);
     for (int i = 0; i < 50; i++) {
         test2();
-        
     }
     gettimeofday(&end_time, NULL);
     //printf("END: %ld\n", end_time.tv_usec);
     long avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
     printf("Test 2 average runtime: %ld microseconds\n", avg);
-    }
 
-    gettimeofday(&start_time, NULL);{
+    gettimeofday(&start_time, NULL);
     for(int i = 0; i < 50; i++) {
         test3();
     }
     gettimeofday(&end_time, NULL);
     avg = (double)((end_time.tv_usec - start_time.tv_usec) / 50);
     printf("Test 3 average runtime: %ld microseconds\n", avg);
-
-    }
-    }
-    
 }
