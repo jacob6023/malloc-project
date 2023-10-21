@@ -92,7 +92,6 @@ void* mymalloc(size_t size, char *file, int line) {
     //Loop to check for open memory until memory is found or we go out of memory.
     
     while(((char*)start) < outOfBounds) {
-
         #ifdef DEBUG
             printf("Current Chunk Space: %d\n", *PAYLOAD(start));
         #endif
@@ -121,10 +120,10 @@ void* mymalloc(size_t size, char *file, int line) {
                 printf("COUNT AND SIZE: %d\n", count + size);
                 printf("CHECKING <-> %d\n", count + ((int)size));
             #endif
-
+            char* tempStart = start;
+            start = start + 8 + ((int)size);
             //Checks to see if a header would fit
-            if (((char*)start) + size + 8 < outOfBounds) {
-                start = start + 8 + ((int)size);
+            if ((((char*)tempStart) + size + 8 < outOfBounds) && *CHUNKNOTFREE(start) == 0) {
 
                 *LASTPAYLOAD(start) = (int16_t)size;
                 *CHUNKNOTFREE(start) = 0;
@@ -163,74 +162,52 @@ void myfree(void *ptr, char *file, int line) {
         printf("%s: %d: Error: Attempt to free data invalid\n", file, line);
         return;
     }
-
     // Convert memory and ptr
-    int16_t* memoryStart = (int16_t*)memory;
+    //int16_t* memoryStart = (int16_t*)memory;
 
     // FAssigns metadata to beginning of memory
     char* metadata = (char*)memory;
-    int16_t* chunk = (int16_t*)(metadata + 8);
+    //int16_t* chunk = (int16_t*)(metadata + 8);
     char* prevdata = metadata;
 
+    char* outOfBounds = (((char*)memory) + (MEMLENGTH * 8));
     // Loops until we reach the start of the memory
-    while (metadata >= memoryStart) {
+    while (!(metadata > outOfBounds)) {
         //checks if we passed the ptr
-        if(metadata > ptr) {
+        if(metadata > ((char*)ptr)) {
+            //printf("CHUNK FOUND\n");
             if (*CHUNKNOTFREE(prevdata) == 1) {
                 *CHUNKNOTFREE(prevdata) = 0;
-
+                //printf("PREV DATA BEFORE %d\n", *PAYLOAD(prevdata));
                 if (*CHUNKNOTFREE(metadata) == 0) {
+                    //printf("METADATA1 %d\n", *PAYLOAD(metadata));
                     *PAYLOAD(prevdata) = *PAYLOAD(prevdata) + 8 + *PAYLOAD(metadata);
+                    //printf("Do right %d\n", *PAYLOAD(prevdata));
                 }
                 
                 metadata = prevdata;
+                //printf("LAST PAYLOAD: %d\n", *LASTPAYLOAD(prevdata));
                 prevdata = prevdata - 8 - *LASTPAYLOAD(prevdata);
+                
 
-                if (*CHUNKNOTFREE(prevdata) == 0) {
+                if (*CHUNKNOTFREE(prevdata) == 0 && *LASTPAYLOAD(metadata) != 0) {
+                    //printf("METADATA2 %d\n", *PAYLOAD(metadata));
                     *PAYLOAD(prevdata) = *PAYLOAD(prevdata) + 8 + *PAYLOAD(metadata);
+                    //printf("Do left %d\n", *PAYLOAD(prevdata));
                 }
+                //printf("Leftover space: %d\n", *PAYLOAD(prevdata));
+                //printf("Is Free: %d\n", *CHUNKNOTFREE(prevdata));
                 return;
             } else {
                 printf("%s: %d: Error: Chunk is already free\n", file, line);
                 return;
             }
         } else {
+            
             prevdata = metadata;
+            //printf("META      PREV: %d   IS NOT FREE: %d   PAY: %d\n", *LASTPAYLOAD(metadata), *CHUNKNOTFREE(metadata), *PAYLOAD(metadata));
             metadata = metadata + 8 + *PAYLOAD(metadata);
         }
-        
-        /*// Check if the current block is free
-        if (!(*metadata & 1)) {
-            *metadata |= 1;  // Set the flag to free
-
-            // Find the size of the current block
-            int16_t target_size = (*metadata >> 8) * 8;
-
-            // Find the metadata for the previous block
-            int16_t* prevMetadata = metadata - (*metadata >> 8);
-
-            // If the previous block is free, merge with it
-            if (prevMetadata >= memoryStart && !(*prevMetadata & 1)) {
-                target_size += (*prevMetadata >> 8) * 8;
-                metadata = prevMetadata;
-            }
-
-            // Finds next metadata block
-            int16_t* nextMetadata = metadata + (*metadata >> 8);
-
-            // If next block is free, then merge
-            if (nextMetadata < (memoryStart + MEMLENGTH) && !(*nextMetadata & 1)) {
-                target_size += (*nextMetadata >> 8) * 8;
-            }
-
-            // Update the size in the current block's metadata
-            printf("Size before: %d\n", *PAYLOAD())
-            *metadata = (target_size >> 3) << 8;
-        }
-
-        // Move to the metadata of the previous block
-        metadata -= (*metadata >> 8);
-        */
     }
     
 
